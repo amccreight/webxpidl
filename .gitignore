@@ -1,4 +1,9 @@
+*~
+
 *.py[co]
+
+WebIDLGrammar.pkl
+parser.out
 
 # Packages
 *.egg
