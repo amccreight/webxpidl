@@ -12,8 +12,10 @@ import WebIDL
 
 InterfaceConfig = {
     'ClientRectList' : {
-        'nativeType': 'nsClientRectList',
         'uuid' : 'c648b9e0-1553-11e2-892e-0800200c9a66',
+    },
+    'TreeWalker' : {
+        'uuid' : 'e8b7a3b0-251b-11e2-81c1-0800200c9a66',
     },
 }
 
@@ -25,14 +27,19 @@ def xifyName(n):
     return 'nsIDOM' + n
 
 Primitivizer = {
-    WebIDL.IDLBuiltinType.Types.unsigned_long : 'unsigned long'
+    WebIDL.IDLBuiltinType.Types.unsigned_long : 'unsigned long',
+    WebIDL.IDLBuiltinType.Types.boolean : 'boolean',
 }
 
 
 def typeString(t):
     if isinstance(t, WebIDL.IDLBuiltinType):
         if t.isPrimitive():
-            return Primitivizer[t.tag()]
+            if t.tag() in Primitivizer:
+                return Primitivizer[t.tag()]
+            else:
+                print 'Unimplemented primitive tag:' + str(t.tag())
+                assert(False)
 
     # I think all types are Nullable in XPIDL, so ignore this.
     if isinstance(t, WebIDL.IDLNullableType):
