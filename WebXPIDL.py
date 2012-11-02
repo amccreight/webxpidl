@@ -11,6 +11,12 @@ import WebIDL
 
 
 InterfaceConfig = {
+    'jsval' : {
+        'xpidlname' : 'jsval'
+    },
+    'ACString' : {
+        'xpidlname' : 'ACString'
+    },
     'ClientRectList' : {
         'uuid' : 'c648b9e0-1553-11e2-892e-0800200c9a66',
     },
@@ -18,15 +24,24 @@ InterfaceConfig = {
         'uuid' : 'e8b7a3b0-251b-11e2-81c1-0800200c9a66',
     },
     'RTCPeerConnection' : {
-        'uuid' : 'notareal-uuid',
+        'uuid' : 'notareal-uuid-0',
     },
-    'jsval' : {
-        'xpidlname' : 'jsval'
+    'RTCSessionDescription' : {
+        'uuid' : 'notareal-uuid-1',
+    },
+    'RTCIceCandidate' : {
+        'uuid' : 'notareal-uuid-2',
     },
 }
 
 def uuidOf(n):
-    return InterfaceConfig[n]['uuid'];
+    if n in InterfaceConfig and 'uuid' in InterfaceConfig[n]:
+        return InterfaceConfig[n]['uuid'];
+    else:
+        print '==============================================================='
+        print 'Error! Failed to provide a uuid for ' + n
+        print '==============================================================='
+        assert(False)
 
 # I think the right way to do this is more like bindings/Configuration.py. Search for nsIDOM.
 def xifyName(n):
@@ -35,8 +50,17 @@ def xifyName(n):
     return 'nsIDOM' + n
 
 Primitivizer = {
+    # WebIDL.IDLBuiltinType.Types.byte: ??,
+    WebIDL.IDLBuiltinType.Types.octet: 'octet',
+    WebIDL.IDLBuiltinType.Types.short: 'short',
+    WebIDL.IDLBuiltinType.Types.unsigned_short : 'unsigned short',
+    WebIDL.IDLBuiltinType.Types.long: 'long',
     WebIDL.IDLBuiltinType.Types.unsigned_long : 'unsigned long',
+    WebIDL.IDLBuiltinType.Types.long_long: 'long long',
+    WebIDL.IDLBuiltinType.Types.unsigned_long_long: 'unsigned long long',
     WebIDL.IDLBuiltinType.Types.boolean : 'boolean',
+    WebIDL.IDLBuiltinType.Types.float: 'float',
+    WebIDL.IDLBuiltinType.Types.double: 'double',
 }
 
 
@@ -51,6 +75,9 @@ def typeString(t):
 
     if t.isVoid():
         return 'void'
+
+    if t.isString():
+        return 'DOMString'
 
     # I think all types are Nullable in XPIDL, so ignore this.
     if isinstance(t, WebIDL.IDLNullableType):
