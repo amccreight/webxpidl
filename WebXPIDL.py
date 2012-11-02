@@ -20,8 +20,9 @@ InterfaceConfig = {
 def uuidOf(n):
     return InterfaceConfig[n]['uuid'];
 
+# I think the right way to do this is more like bindings/Configuration.py. Search for nsIDOM.
 def xifyName(n):
-    return 'nsI' + n
+    return 'nsIDOM' + n
 
 Primitivizer = {
     WebIDL.IDLBuiltinType.Types.unsigned_long : 'unsigned long'
@@ -61,17 +62,17 @@ def convertArguments(aa):
 def convertMethod(m):
     sys.stdout.write('  ')
 
-    # generate the special tag
-    if m.isGetter():
-        sys.stdout.write('[getter] ')
-    elif m.isSetter():
-        sys.stdout.write('[setter] ')
+    # I guess getter and setter aren't actual XPIDL attributes?
+    #if m.isGetter():
+    #    sys.stdout.write('[getter] ')
+    #elif m.isSetter():
+    #    sys.stdout.write('[setter] ')
     sigs = m.signatures()
     assert(len(sigs) == 1)
     sig = sigs[0] # why isn't this an IDLMethodOverload?
-    sys.stdout.write('{0} {1}({2})\n'.format(typeString(sig[0]), \
-                                             m.identifier.name, \
-                                             convertArguments(sig[1])))
+    sys.stdout.write('{0} {1}({2});\n'.format(typeString(sig[0]), \
+                                              m.identifier.name, \
+                                              convertArguments(sig[1])))
 
 
 def convertAttr(a):
@@ -93,18 +94,24 @@ def convertMember(m):
         assert(isConst())
         convertConst(m)
 
+def convertInterfaceAttributes(x):
+    n = x.identifier.name
+    # Are these always scriptable?
+    sys.stdout.write('[scriptable, uuid({0})]\n'.format(uuidOf(n)))
+
 def convertDecl(x):
     if x.isExternal():
         sys.stdout.write('interface ' + xifyName(x.identifier.name) + ';\n')
     else:
         n = x.identifier.name
         sys.stdout.write('\n')
-        sys.stdout.write('[uuid({0})]\n'.format(uuidOf(n)))
-        sys.stdout.write('interface {0}\n'.format(xifyName(n)))
+        convertInterfaceAttributes(x)
+        # Interfaces probably don't always inherit from nsISupports.
+        sys.stdout.write('interface {0} : nsISupports\n'.format(xifyName(n)))
         sys.stdout.write('{\n')
         for m in x.members:
             convertMember(m)
-        sys.stdout.write('}\n')
+        sys.stdout.write('};\n')
 
 def licenseBoilerplate():
     sys.stdout.write('/* This Source Code Form is subject to the terms of the Mozilla Public\n')
@@ -148,9 +155,14 @@ def parseIt():
         else:
             print e
 
+def includes():
+    # This isn't always included, but I'm not sure when it is or isn't needed.
+    sys.stdout.write('#include "domstubs.idl"\n')
+    sys.stdout.write('\n')
 
 def main():
     licenseBoilerplate()
+    includes()
     for x in parseIt():
         convertDecl(x)
 
