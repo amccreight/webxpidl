@@ -12,6 +12,7 @@ import WebIDL
 
 InterfaceConfig = {
     'ClientRectList' : {
+        'nativeType': 'nsClientRectList',
         'uuid' : 'c648b9e0-1553-11e2-892e-0800200c9a66',
     },
 }
@@ -141,7 +142,7 @@ def parseIt():
             #print fullPath
             parser.parse(''.join(lines), fullPath)
         return parser.finish()
-    except WebIDLError, e:
+    except WebIDL.WebIDLError, e:
         if options.verbose_errors:
             traceback.print_exc()
         else:
