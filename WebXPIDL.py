@@ -17,6 +17,12 @@ InterfaceConfig = {
     'TreeWalker' : {
         'uuid' : 'e8b7a3b0-251b-11e2-81c1-0800200c9a66',
     },
+    'RTCPeerConnection' : {
+        'uuid' : 'notareal-uuid',
+    },
+    'jsval' : {
+        'xpidlname' : 'jsval'
+    },
 }
 
 def uuidOf(n):
@@ -24,6 +30,8 @@ def uuidOf(n):
 
 # I think the right way to do this is more like bindings/Configuration.py. Search for nsIDOM.
 def xifyName(n):
+    if n in InterfaceConfig and 'xpidlname' in InterfaceConfig[n]:
+        return InterfaceConfig[n]['xpidlname']
     return 'nsIDOM' + n
 
 Primitivizer = {
@@ -41,6 +49,9 @@ def typeString(t):
                 print 'Unimplemented primitive tag:' + str(t.tag())
                 assert(False)
 
+    if t.isVoid():
+        return 'void'
+
     # I think all types are Nullable in XPIDL, so ignore this.
     if isinstance(t, WebIDL.IDLNullableType):
         return typeString(t.inner)
@@ -53,9 +64,12 @@ def typeString(t):
 
 
 def argumentString(a):
-    assert(not a.optional)
+    s = ''
+    if (a.optional):
+        s += '[optional] '
+
     # Probably othing things we should handle, as well.
-    s = 'in ' + typeString(a.type) + ' ' + a.identifier.name
+    s += 'in ' + typeString(a.type) + ' ' + a.identifier.name
     return s
 
 
